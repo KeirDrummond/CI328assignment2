@@ -49,9 +49,9 @@ var planeSpeed = 10;
 setInterval(Update, 1000/60);
 function Update() {
     var player = getAllPlayers();
-    for (var i = 0; i < players.length, i++)
+    for (var i = 0; i < player.length; i++)
         {
-            player[i].x =+ planeSpeed;
+            player[i].x = player[i].x + planeSpeed;
             if (player[i].x > GameSize.x) 
                 {
                     player[i].x = player[i].x - GameSize.x;

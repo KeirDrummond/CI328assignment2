@@ -1,20 +1,25 @@
 var Game = {};
 
-Game.init = function(){
-    game.stage.disableVisibilityChange = true;
-};
+function preload() {
+    game = this;
+    this.load.image('sprite', 'assets/plane.png');
+}
 
-Game.preload = function() {
-    game.load.image('sprite', 'assets/plane.png');
-};
+//console.log(game);
 
-Game.create = function(){
+function create() {
     Game.playerMap = {};
-    var testKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-    testKey.onDown.add(Client.sendTest, this);
-    
+    var testKey = this.input.keyboard.addKey('ENTER');
+    testKey.on('down', function() { Client.sendTest });
     Client.askNewPlayer();
-};
+}
+
+function update() {
+    Client.update();
+    Object.keys(Game.playerMap).forEach(function(player){
+        Game.playerMap[player].update();
+    });
+}
 
 Game.addNewPlayer = function(id, x, y){
     Game.playerMap[id] = new Player(id, x, y);

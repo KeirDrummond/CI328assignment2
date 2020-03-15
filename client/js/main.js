@@ -1,4 +1,12 @@
-var game = new Phaser.Game(800, 600, Phaser.AUTO, '');
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
 
-game.state.add('Game', Game);
-game.state.start('Game');
+var game = new Phaser.Game(config);

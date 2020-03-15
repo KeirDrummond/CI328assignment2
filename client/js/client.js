@@ -10,6 +10,10 @@ Client.askNewPlayer = function(){
     Client.socket.emit('newplayer');
 }
 
+Client.update = function(){
+    Client.socket.emit('update');
+}
+
 Client.socket.on('newplayer',function(data){
     //Game.addNewPlayer(data.id,data.x,data.y);
 });
