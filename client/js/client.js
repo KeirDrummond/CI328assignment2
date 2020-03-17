@@ -6,8 +6,8 @@ Client.sendTest = function(){
     Client.socket.emit('test');
 };
 
-Client.askNewPlayer = function(){
-    Client.socket.emit('newplayer');
+Client.askNewPlayer = function(colour){
+    Client.socket.emit('newplayer', colour);
 }
 
 Client.update = function(){
@@ -15,12 +15,19 @@ Client.update = function(){
 }
 
 Client.socket.on('newplayer',function(data){
-    //Game.addNewPlayer(data.id,data.x,data.y);
+    Game.addNewPlayer(data.id, data.x, data.y, data.colour);
+});
+
+Client.socket.on('leftplayer',function(data){
+    var player = Game.playerMap[data.id];
+    delete Game.playerMap[player.id];
+    player.OnDisconnect();
+    
 });
 
 Client.socket.on('allplayers', function(data){
     for (var i = 0; i < data.length; i++){
-        Game.addNewPlayer(data[i].id, data[i].x, data[i].y);
+        Game.addNewPlayer(data[i].id, data[i].x, data[i].y, data[i].colour);
     }
 });
 
