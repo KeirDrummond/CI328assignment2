@@ -9,11 +9,12 @@ io.on('connection', function(client) {
         console.log('test recieved');
     });
     
-    client.on('newplayer',function() {
+    client.on('newplayer',function(colour) {
         client.player = {
             id: server.lastPlayerID++,
             x: randomInt(100, 700),
-            y: randomInt(100, 300)
+            y: randomInt(100, 300),
+            colour: colour
         };
         
         console.log('connecting: ' + client.player.id);
@@ -22,6 +23,7 @@ io.on('connection', function(client) {
 
         client.on('disconnect',function() {
             io.emit('remove', client.player.id);
+            client.broadcast.emit('leftplayer', client.player);
             console.log('disconnecting: ' + client.player.id);
         });
         
