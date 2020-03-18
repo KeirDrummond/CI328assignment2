@@ -14,7 +14,12 @@ io.on('connection', function(client) {
             id: server.lastPlayerID++,
             x: randomInt(100, 700),
             y: randomInt(100, 300),
-            colour: colour
+            angle: 0,
+            colour: colour,
+            input: {
+                move: 0,
+                fire: 0
+            }
         };
         
         console.log('connecting: ' + client.player.id);
@@ -26,6 +31,16 @@ io.on('connection', function(client) {
             client.broadcast.emit('leftplayer', client.player);
             console.log('disconnecting: ' + client.player.id);
         });
+        
+        client.on('inputmove',function(input) {
+            input = Math.max(-1, Math.min(1, input));
+            client.player.input.move = input;
+        });
+        
+        client.on('inputfire',function(input) {
+            input = Math.max(0, Math.min(1, input));
+            client.player.input.fire = input;
+        })
         
         client.on('update', function() {
             client.emit('update', getAllPlayers());
@@ -43,21 +58,23 @@ server.listen(PORT, function(){
 
 var GameSize = {
     x: 800,
-    y: 400
+    y: 600
 };
 
-var planeSpeed = 10;
+var planeSpeed = 5;
 
 setInterval(Update, 1000/60);
 function Update() {
     var player = getAllPlayers();
     for (var i = 0; i < player.length; i++)
         {
-            player[i].x = player[i].x + planeSpeed;
-            if (player[i].x > GameSize.x) 
-                {
-                    player[i].x = player[i].x - GameSize.x;
-                }
+            player[i].x += planeSpeed;
+            player[i].angle += player[i].input.move;
+            
+            if (player[i].x > GameSize.x) { player[i].x -= GameSize.x; }
+            else if (player[i].x < 0) { player[i].x += GameSize.x; }
+            if (player[i].y > GameSize.y) { player[i].y -= GameSize.y; }
+            else if (player[i].y < 0) { player[i].y += GameSize.y; }
         }
 }
 
