@@ -29,11 +29,11 @@ function create() {
         down: 'down',
         space: 'SPACE'
     });
-    inputKeys.up.on('down', function(event) { Input.move -= 1; Client.inputMove(Input.move); });
-    inputKeys.up.on('up', function(event) { Input.move += 1; Client.inputMove(Input.move); });
+    inputKeys.up.on('down', function(event) { Input.move -= 1; Input.move = Math.max(Input.move, -1); Client.inputMove(Input.move); });
+    inputKeys.up.on('up', function(event) { Input.move += 1; Input.move = Math.min(Input.move, 1); Client.inputMove(Input.move); });
     
-    inputKeys.down.on('down', function(event) { Input.move += 1; Client.inputMove(Input.move); });
-    inputKeys.down.on('up', function(event) { Input.move -= 1; Client.inputMove(Input.move); });
+    inputKeys.down.on('down', function(event) { Input.move += 1; Input.move = Math.min(Input.move, 1); Client.inputMove(Input.move); });
+    inputKeys.down.on('up', function(event) { Input.move -= 1; Input.move = Math.max(Input.move, -1); Client.inputMove(Input.move); });
     
     inputKeys.space.on('down', function(event) { Input.fire = 1; Client.inputFire(Input.fire); });
     inputKeys.space.on('up', function(event) { Input.fire = 0; Client.inputFire(Input.fire); });
