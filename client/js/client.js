@@ -23,8 +23,7 @@ Client.update = function(){
 }
 
 Client.socket.on('newplayer',function(data){
-    Game.addNewPlayer(data.id, data.x, data.y, data.angle, data.colour);
-    console.log(data.colour);
+    Game.addNewPlayer(data.id, data.position.x, data.position.y, data.angle, data.colour);    
 });
 
 Client.socket.on('leftplayer',function(data){
@@ -36,14 +35,14 @@ Client.socket.on('leftplayer',function(data){
 
 Client.socket.on('allplayers', function(data){
     for (var i = 0; i < data.length; i++){
-        Game.addNewPlayer(data[i].id, data[i].x, data[i].y, data[i].angle, data[i].colour);
+        Game.addNewPlayer(data[i].id, data[i].position.x, data[i].position.y, data[i].angle, data[i].colour);
     }
 });
 
 Client.socket.on('update', function(data){
     for (var i = 0; i < data.length; i++){
-        Game.playerMap[data[i].id].x = data[i].x;
-        Game.playerMap[data[i].id].y = data[i].y;
+        Game.playerMap[data[i].id].x = data[i].position.x;
+        Game.playerMap[data[i].id].y = data[i].position.y;
         Game.playerMap[data[i].id].angle = data[i].angle;
     }
 })
