@@ -4,7 +4,7 @@ var Input = {};
 
 function preload() {
     game = this;
-    this.load.image('sprite', 'assets/plane.png');
+    this.load.image('sprite', 'assets/Plane3.png');
     this.load.image('bg', 'assets/Hill_Background.png');
 }
 
@@ -13,7 +13,7 @@ function preload() {
 function create() {
     var bg = this.add.sprite(0, 0, 'bg');
     bg.setDisplayOrigin(0, 0);
-    bg.scale = 0.75;
+    bg.scale = 1;
     bg.width = 800;
     bg.height = 600;
     Game.playerMap = {};
