@@ -39,10 +39,13 @@ Client.socket.on('allplayers', function(data){
     }
 });
 
-Client.socket.on('update', function(data){
+Client.socket.on('update', function(data, bullets){
     for (var i = 0; i < data.length; i++){
         Game.playerMap[data[i].id].x = data[i].position.x;
         Game.playerMap[data[i].id].y = data[i].position.y;
         Game.playerMap[data[i].id].angle = data[i].angle;
+    }
+    for (var i = 0; i < bullets.length; i++){
+        
     }
 })

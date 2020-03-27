@@ -5,6 +5,7 @@ var Input = {};
 function preload() {
     game = this;
     this.load.image('sprite', 'assets/Plane3.png');
+    this.load.image('bullet', 'assets/bullet.png');
     this.load.image('bg', 'assets/Hill_Background.png');
 }
 
