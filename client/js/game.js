@@ -9,8 +9,6 @@ function preload() {
     this.load.image('bg', 'assets/Hill_Background.png');
 }
 
-//console.log(game);
-
 function create() {
     var bg = this.add.sprite(0, 0, 'bg');
     bg.setDisplayOrigin(0, 0);
@@ -50,6 +48,6 @@ function update() {
     });
 }
 
-Game.addNewPlayer = function(id, x, y, angle, colour){
-    Game.playerMap[id] = new Player(id, x, y, angle, colour);
+Game.addNewPlayer = function(id, x, y, angle, colour, bulletSet){
+    Game.playerMap[id] = new Player(id, x, y, angle, colour, bulletSet);
 }

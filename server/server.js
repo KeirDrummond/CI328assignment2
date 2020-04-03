@@ -25,10 +25,10 @@ io.on('connection', function(client) {
             fireCD: 0
         };
         
-        client.bulletSet = new Array(5);
-        for (var i = 0; i < client.bulletSet.length; i++)
+        client.player.bulletSet = new Array(5);
+        for (var i = 0; i < client.player.bulletSet.length; i++)
             {
-                client.bulletSet[i] = 
+                client.player.bulletSet[i] = 
                     {
                         owner: client.player.id,
                         position: {
@@ -124,12 +124,27 @@ function Update() {
                         }
                 }            
         }
-    var bulletSet = getAllBullets();
-    for (var x = 0; x < bulletSet.length; x++)
+    
+    var bulletSpeed = 10;
+    
+    var bullets = getAllBullets();
+    for (var i = 0; i < bullets.length; i++)
         {
-            for (var y = 0; y < bulletSet[x].length; y++)
-                {
-                    console.log(bulletSet[x][y]);
+            if (bullets[i].alive)
+                {                    
+                    bullets[i].position.x += bulletSpeed * Math.cos(degrees_to_radians(bullets[i].angle));
+                    bullets[i].position.y += bulletSpeed * Math.sin(degrees_to_radians(bullets[i].angle));
+
+                    if (bullets[i].position.x > GameSize.x) { bullets[i].position.x -= GameSize.x; }
+                    else if (bullets[i].position.x < 0) { bullets[i].position.x += GameSize.x; }
+                    if (bullets[i].position.y > GameSize.y) { bullets[i].position.y -= GameSize.y; }
+                    else if (bullets[i].position.y < 0) { bullets[i].position.y += GameSize.y; }
+                    
+                    bullets[i].lifetime -= 1/60;
+                    if (bullets[i].lifetime <= 0)
+                        {
+                            bullets[i].alive = false;
+                        }
                 }
         }
 }
@@ -146,14 +161,67 @@ function getAllPlayers(){
 function getAllBullets(){
     var bullets = [];
     Object.keys(io.sockets.connected).forEach(function(socketID){
-        var bulletSet = io.sockets.connected[socketID].bulletSet;
-        if (bulletSet) { bullets.push(bulletSet); }
+        var player = io.sockets.connected[socketID].player;
+        if (player) {
+            for (i = 0; i < player.bulletSet.length; i++)
+                {
+                    bullets.push(player.bulletSet[i]);
+                }
+        }
     });
     return bullets;
 }
 
 function FireBullet(player) {
-
+    
+    var quickFireRate = 100; // Delay in milliseconds
+    
+    Bullet1();
+    
+    function Bullet1(){
+        player.bulletSet[0].position.x = player.position.x;
+        player.bulletSet[0].position.y = player.position.y;
+        player.bulletSet[0].angle = player.angle;
+        player.bulletSet[0].lifetime = 1;
+        player.bulletSet[0].alive = true;
+        setTimeout(Bullet2, quickFireRate);
+        console.log("Bullet 1");
+    }
+    function Bullet2(){
+        player.bulletSet[1].position.x = player.position.x;
+        player.bulletSet[1].position.y = player.position.y;
+        player.bulletSet[1].angle = player.angle;
+        player.bulletSet[1].lifetime = 1;
+        player.bulletSet[1].alive = true;
+        setTimeout(Bullet3, quickFireRate);
+        console.log("Bullet 2");
+    }
+    function Bullet3(){
+        player.bulletSet[2].position.x = player.position.x;
+        player.bulletSet[2].position.y = player.position.y;
+        player.bulletSet[2].angle = player.angle;
+        player.bulletSet[2].lifetime = 1;
+        player.bulletSet[2].alive = true;
+        setTimeout(Bullet4, quickFireRate);
+        console.log("Bullet 3");
+    }
+    function Bullet4(){
+        player.bulletSet[3].position.x = player.position.x;
+        player.bulletSet[3].position.y = player.position.y;
+        player.bulletSet[3].angle = player.angle;
+        player.bulletSet[3].lifetime = 1;
+        player.bulletSet[3].alive = true;
+        setTimeout(Bullet5, quickFireRate);
+        console.log("Bullet 4");
+    }
+    function Bullet5(){
+        player.bulletSet[4].position.x = player.position.x;
+        player.bulletSet[4].position.y = player.position.y;
+        player.bulletSet[4].angle = player.angle;
+        player.bulletSet[4].lifetime = 1;
+        player.bulletSet[4].alive = true;
+        console.log("Bullet 5");
+    }
 }
 
 function randomInt(low, high) {

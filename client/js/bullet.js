@@ -6,6 +6,7 @@ class Bullet extends Phaser.GameObjects.GameObject {
         this.x = x;
         this.y = y;
         this.angle = angle;
+        this.alive = false;
         
         this.sprite = game.add.sprite(x, y, 'bullet');
         this.sprite.angle = this.angle;
@@ -17,6 +18,11 @@ class Bullet extends Phaser.GameObjects.GameObject {
     }
     
     update() {
-        this.sprite.setPosition(this.x, this.y);
+        this.sprite.setVisible(this.alive);
+        if (this.alive)
+            {
+                this.sprite.setPosition(this.x, this.y);
+                this.sprite.angle = this.angle;
+            }
     }
 }
