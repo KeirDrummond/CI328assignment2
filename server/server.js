@@ -25,6 +25,22 @@ io.on('connection', function(client) {
             fireCD: 0
         };
         
+        client.bulletSet = new Array(5);
+        for (var i = 0; i < client.bulletSet.length; i++)
+            {
+                client.bulletSet[i] = 
+                    {
+                        owner: client.player.id,
+                        position: {
+                            x: 0,
+                            y: 0
+                        },
+                        angle: 0,
+                        lifetime: 1,
+                        alive: false
+                    };
+            }
+        
         console.log('connecting: ' + client.player.id);
         client.emit('allplayers', getAllPlayers());
         client.broadcast.emit('newplayer',client.player);
@@ -72,7 +88,7 @@ var planeSize = {
 var BulletArray = {};
 
 var planeSpeed = 5;
-var fireRate = 3;
+var fireRate = 2;
 
 function degrees_to_radians(degrees)
 {
@@ -106,26 +122,14 @@ function Update() {
                             FireBullet(player[i]);
                             player[i].fireCD = fireRate;
                         }
-                }
+                }            
         }
-    
-    for (var i = 0; i < BulletArray.length; i++)
+    var bulletSet = getAllBullets();
+    for (var x = 0; x < bulletSet.length; x++)
         {
-            BulletArray[i].position.x += planeSpeed * Math.cos(degrees_to_radians(BulletArray[i].angle));
-            BulletArray[i].position.y += planeSpeed * Math.sin(degrees_to_radians(BulletArray[i].angle));
-            
-            if (BulletArray[i].position.x > GameSize.x) { BulletArray[i].position.x -= GameSize.x; }
-            else if (BulletArray[i].position.x < 0) { BulletArray[i].position.x += GameSize.x; }
-            if (BulletArray[i].position.y > GameSize.y) { BulletArray[i].position.y -= GameSize.y; }
-            else if (BulletArray[i].position.y < 0) { BulletArray[i].position.y += GameSize.y; }
-            
-            if (BulletArray[i].angle > 180) { BulletArray[i].angle -= 360; }
-            if (BulletArray[i].angle < -180) { BulletArray[i].angle += 360; }
-            
-            BulletArray[i].lifetime -= 1/60;
-            if (BulletArray[i].lifetime <= 0)
+            for (var y = 0; y < bulletSet[x].length; y++)
                 {
-                    
+                    console.log(bulletSet[x][y]);
                 }
         }
 }
@@ -139,19 +143,17 @@ function getAllPlayers(){
     return players;
 }
 
+function getAllBullets(){
+    var bullets = [];
+    Object.keys(io.sockets.connected).forEach(function(socketID){
+        var bulletSet = io.sockets.connected[socketID].bulletSet;
+        if (bulletSet) { bullets.push(bulletSet); }
+    });
+    return bullets;
+}
+
 function FireBullet(player) {
-    console.log("Pew");
-    var bullet = {
-        id: 
-        owner: player.id,
-        position: {
-            x: player.position.x + 64,
-            y: player.position.y
-        },
-        angle: player.angle,
-        lifetime: 5 
-    };
-    BulletArray.push(bullet);
+
 }
 
 function randomInt(low, high) {
