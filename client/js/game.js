@@ -4,9 +4,9 @@ var Input = {};
 
 function preload() {
     game = this;
-    this.load.image('sprite', 'assets/Plane3.png');
-    this.load.image('bullet', 'assets/bullet.png');
-    this.load.image('bg', 'assets/Hill_Background.png');
+    this.load.image('sprite', 'assets/Plane5.png');
+    this.load.image('bullet', 'assets/bulletM.png');
+    this.load.image('bg', 'assets/Background_Sky.png');
 }
 
 function create() {
