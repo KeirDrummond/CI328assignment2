@@ -16,6 +16,10 @@ io.on('connection', function(client) {
                 x: randomInt(100, 700),
                 y: randomInt(100, 300)
             },
+            size: {
+                width: 64,
+                height: 32
+            },
             angle: 0,
             colour: colour,
             input: {
@@ -34,6 +38,10 @@ io.on('connection', function(client) {
                         position: {
                             x: 0,
                             y: 0
+                        },
+                        size: {
+                            width: 8,
+                            height: 8
                         },
                         angle: 0,
                         lifetime: 1,
@@ -80,15 +88,11 @@ var GameSize = {
     y: 800
 };
 
-var planeSize = {
-    x: 64,
-    y: 32
-};
-
 var BulletArray = {};
 
 var planeSpeed = 5;
-var fireRate = 2;
+var fireRate = 1.5;
+var bulletLifetime = 0.75;
 
 function degrees_to_radians(degrees)
 {
@@ -99,6 +103,7 @@ function degrees_to_radians(degrees)
 setInterval(Update, 1000/60);
 function Update() {
     var player = getAllPlayers();
+    var bullets = getAllBullets();
     for (var i = 0; i < player.length; i++)
         {
             player[i].angle += player[i].input.move;
@@ -122,12 +127,30 @@ function Update() {
                             FireBullet(player[i]);
                             player[i].fireCD = fireRate;
                         }
-                }            
+                }
+            
+            //CheckCollisions();
+            
+            //Collision
+            /*
+            for (var p = 0; p < player.length; p++)
+                {
+                    if (player[p] != player[i])
+                        {
+                            if (CheckCollisionAABB(player[i], player[p])) { if (CheckCollisionSAT(player[i], player[p])) { console.log("Collided with player"); }}
+                        }
+                }
+            for (var b = 0; b < bullets.length; b++)
+                {
+                    if (bullets[b].alive && bullets[b].owner != player[i].id)
+                        {
+                            if (CheckCollisionAABB(player[i], bullets[b])) { if (CheckCollisionSAT(player[i], bullets[b])) { console.log("Collided with bullet"); }}
+                        }
+                }*/
         }
     
-    var bulletSpeed = 10;
+    var bulletSpeed = 15;    
     
-    var bullets = getAllBullets();
     for (var i = 0; i < bullets.length; i++)
         {
             if (bullets[i].alive)
@@ -145,6 +168,20 @@ function Update() {
                         {
                             bullets[i].alive = false;
                         }
+                }
+        }
+}
+
+function CheckCollisions(){
+    var players = getAllPlayers();
+    var collisionFlags = new Array(players.length);
+    collisionFlags[0] = {};
+    
+    for (var x = 0; x < players.length; x++)
+        {
+            for (var y = 0; y < players.length; y++)
+                {
+                    //Stuff
                 }
         }
 }
@@ -172,55 +209,67 @@ function getAllBullets(){
     return bullets;
 }
 
+
+function CheckCollisionAABB(objectA, objectB)
+{    
+    if ((objectA.position.x - (objectA.size.width / 2))                         < (objectB.position.x - (objectB.size.width / 2)) + objectB.size.width &&
+        (objectA.position.x - (objectA.size.width / 2)) + objectA.size.width    > (objectB.position.x - (objectB.size.width / 2)) &&
+        (objectA.position.y - (objectA.size.width / 2))                         < (objectB.position.y - (objectB.size.width / 2)) + objectB.size.width &&
+        (objectA.position.y - (objectA.size.width / 2)) + objectA.size.width    > (objectB.position.y - (objectB.size.width / 2)))
+        { return true; }
+    return false;
+}
+
+function CheckCollisionSAT(objectA, objectB)
+{
+    console.log("Checking SAT");
+    return false;
+}
+
 function FireBullet(player) {
     
-    var quickFireRate = 100; // Delay in milliseconds
+    var quickFireRate = 75; // Delay in milliseconds
     
     Bullet1();
     
     function Bullet1(){
-        player.bulletSet[0].position.x = player.position.x;
-        player.bulletSet[0].position.y = player.position.y;
+        player.bulletSet[0].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
+        player.bulletSet[0].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
         player.bulletSet[0].angle = player.angle;
-        player.bulletSet[0].lifetime = 1;
+        player.bulletSet[0].lifetime = bulletLifetime;
         player.bulletSet[0].alive = true;
         setTimeout(Bullet2, quickFireRate);
-        console.log("Bullet 1");
     }
     function Bullet2(){
-        player.bulletSet[1].position.x = player.position.x;
-        player.bulletSet[1].position.y = player.position.y;
+        player.bulletSet[1].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
+        player.bulletSet[1].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
         player.bulletSet[1].angle = player.angle;
-        player.bulletSet[1].lifetime = 1;
+        player.bulletSet[1].lifetime = bulletLifetime;
         player.bulletSet[1].alive = true;
         setTimeout(Bullet3, quickFireRate);
-        console.log("Bullet 2");
     }
     function Bullet3(){
-        player.bulletSet[2].position.x = player.position.x;
-        player.bulletSet[2].position.y = player.position.y;
+        player.bulletSet[2].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
+        player.bulletSet[2].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
         player.bulletSet[2].angle = player.angle;
-        player.bulletSet[2].lifetime = 1;
+        player.bulletSet[2].lifetime = bulletLifetime;
         player.bulletSet[2].alive = true;
         setTimeout(Bullet4, quickFireRate);
-        console.log("Bullet 3");
     }
     function Bullet4(){
-        player.bulletSet[3].position.x = player.position.x;
-        player.bulletSet[3].position.y = player.position.y;
+        player.bulletSet[3].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
+        player.bulletSet[3].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
         player.bulletSet[3].angle = player.angle;
-        player.bulletSet[3].lifetime = 1;
+        player.bulletSet[3].lifetime = bulletLifetime;
         player.bulletSet[3].alive = true;
         setTimeout(Bullet5, quickFireRate);
-        console.log("Bullet 4");
     }
     function Bullet5(){
-        player.bulletSet[4].position.x = player.position.x;
-        player.bulletSet[4].position.y = player.position.y;
+        player.bulletSet[4].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
+        player.bulletSet[4].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
         player.bulletSet[4].angle = player.angle;
-        player.bulletSet[4].lifetime = 1;
+        player.bulletSet[4].lifetime = bulletLifetime;
         player.bulletSet[4].alive = true;
-        console.log("Bullet 5");
     }
 }
 
