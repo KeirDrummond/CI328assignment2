@@ -129,24 +129,39 @@ function Update() {
                         }
                 }
             
-            //CheckCollisions();
-            
             //Collision
-            /*
-            for (var p = 0; p < player.length; p++)
+            
+            var ppCollision = CheckCollisions(player, player);
+            for (var p1 = 0; p1 < ppCollision.length; p1++)
                 {
-                    if (player[p] != player[i])
+                    for (var p2 = 0; p2 < ppCollision[p1].length; p2++)
                         {
-                            if (CheckCollisionAABB(player[i], player[p])) { if (CheckCollisionSAT(player[i], player[p])) { console.log("Collided with player"); }}
+                            if (ppCollision[p1][p2] && ppCollision[p2][p1])
+                                {
+                                    // Ensures it won't be called twice.
+                                    ppCollision[p1][p2] = false;
+                                    ppCollision[p2][p1] = false;
+                                    
+                                    //Do something.
+                                }
                         }
                 }
-            for (var b = 0; b < bullets.length; b++)
+            
+            var pbCollision = CheckCollisions(player, bullets);
+            for (var p = 0; p < pbCollision.length; p++)
                 {
-                    if (bullets[b].alive && bullets[b].owner != player[i].id)
+                    for (var b = 0; b < pbCollision[p1].length; b++)
                         {
-                            if (CheckCollisionAABB(player[i], bullets[b])) { if (CheckCollisionSAT(player[i], bullets[b])) { console.log("Collided with bullet"); }}
+                            if (pbCollision[p][b] && pbCollision[p][b])
+                                {
+                                    // Ensures it won't be called twice.
+                                    pbCollision[p][b] = false;
+                                    pbCollision[b][p] = false;
+                                    
+                                    //Do something.
+                                }
                         }
-                }*/
+                }
         }
     
     var bulletSpeed = 15;    
@@ -172,18 +187,52 @@ function Update() {
         }
 }
 
-function CheckCollisions(){
-    var players = getAllPlayers();
-    var collisionFlags = new Array(players.length);
-    collisionFlags[0] = {};
+function CheckCollisions(array1, array2){
+    var collision = new Array(array1.length);
     
-    for (var x = 0; x < players.length; x++)
+    for (var i = 0; i < collision.length; i++)
         {
-            for (var y = 0; y < players.length; y++)
+            collision[i] = new Array(array2.length);
+        }
+    for (var x = 0; x < collision.length; x++)
+        {
+            for (var y = 0; y < collision[x].length; y++)
                 {
-                    //Stuff
+                    collision[x][y] = false;
                 }
         }
+    
+    for (o1 = 0; o1 < collision.length; o1++)
+        {
+            for (o2 = 0; o2 < collision[o1].length; o2++)
+                {
+                    if (!collision[o1][o2] && o1 != o2)
+                        {
+                            if (CheckCollisionAABB(array1[o1], array2[o2]))
+                                {
+                                    collision[o1][o2] = true;
+                                    collision[o2][o1] = true;
+                                }
+                        }
+                }
+        }
+    
+    for (o1 = 0; o1 < collision.length; o1++)
+        {
+            for (o2 = 0; o2 < collision[o1].length; o2++)
+                {
+                    if (collision[o1][o2])
+                        {
+                            if (!CheckCollisionSAT(array1[o1], array2[o2]))
+                                {
+                                    collision[o1][o2] = false;
+                                    collision[o2][o1] = false;
+                                }
+                        }
+                }
+        }
+    
+    return collision;
 }
 
 function getAllPlayers(){
