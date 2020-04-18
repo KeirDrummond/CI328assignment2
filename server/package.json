@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "sat": "^0.8.0",
     "socket.io": "^2.3.0"
   }
 }
