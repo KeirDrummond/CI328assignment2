@@ -1,15 +1,18 @@
 class Player extends Phaser.GameObjects.GameObject {
-    constructor(id, x, y, angle, colour, bulletSet) {
+    constructor(id, polygon, colour, bulletSet) {
         super(game, 'Player');
         
         this.id = id;
-        this.x = x;
-        this.y = y;
-        this.angle = angle;
+        this.x = polygon.pos.x;
+        this.y = polygon.pos.y;
+        this.angle = polygon.angle;
         this.colour = colour;
         this.bulletSet = bulletSet;
         
-        this.sprite = game.add.sprite(x, y, 'sprite');
+        console.log(polygon.pos);
+        
+        this.sprite = game.add.sprite(this.x, this.y, 'sprite');
+        this.sprite.setOrigin(0, 0);
         this.sprite.angle = this.angle;
         this.sprite.tint = this.colour;
         console.log("New player added");
@@ -17,7 +20,7 @@ class Player extends Phaser.GameObjects.GameObject {
         this.bulletSprites = new Array(5);
         for (var i = 0; i < this.bulletSprites.length; i++)
             {
-                this.bulletSprites[i] = new Bullet(i, this.bulletSet[i].position.x, this.bulletSet[i].position.y, this.bulletSet[i].angle);
+                this.bulletSprites[i] = new Bullet(i, this.bulletSet[i].polygon.pos.x, this.bulletSet[i].polygon.pos.y, this.bulletSet[i].polygon.angle);
             }
     }
     
@@ -32,9 +35,9 @@ class Player extends Phaser.GameObjects.GameObject {
         
         for (var i = 0; i < this.bulletSprites.length; i++)
             {
-                this.bulletSprites[i].x = this.bulletSet[i].position.x;
-                this.bulletSprites[i].y = this.bulletSet[i].position.y;
-                this.bulletSprites[i].angle = this.bulletSet[i].angle;
+                this.bulletSprites[i].x = this.bulletSet[i].polygon.pos.x;
+                this.bulletSprites[i].y = this.bulletSet[i].polygon.pos.y;
+                this.bulletSprites[i].angle = this.bulletSet[i].polygon.angle;
                 this.bulletSprites[i].alive = this.bulletSet[i].alive;
                 this.bulletSprites[i].update();
             }

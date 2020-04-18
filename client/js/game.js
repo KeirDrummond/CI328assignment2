@@ -48,6 +48,6 @@ function update() {
     });
 }
 
-Game.addNewPlayer = function(id, x, y, angle, colour, bulletSet){
-    Game.playerMap[id] = new Player(id, x, y, angle, colour, bulletSet);
+Game.addNewPlayer = function(id, polygon, colour, bulletSet){
+    Game.playerMap[id] = new Player(id, polygon, colour, bulletSet);
 }
