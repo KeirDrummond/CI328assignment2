@@ -2,6 +2,7 @@ const PORT = 55000;
 
 var server = require('http').createServer();
 var io = require('socket.io')(server);
+var SAT = require('sat');
 
 io.on('connection', function(client) {
     
@@ -12,15 +13,12 @@ io.on('connection', function(client) {
     client.on('newplayer',function(colour) {
         client.player = {
             id: server.lastPlayerID++,
-            position: {
-                x: randomInt(100, 700),
-                y: randomInt(100, 300)
-            },
-            size: {
-                width: 64,
-                height: 32
-            },
-            angle: 0,
+            polygon: new SAT.Polygon(new SAT.Vector(0, 0), [
+                new SAT.Vector(0, 0),
+                new SAT.Vector(64, 0),
+                new SAT.Vector(64, 32),
+                new SAT.Vector(0, 32)
+            ]),
             colour: colour,
             input: {
                 move: 0,
@@ -35,15 +33,12 @@ io.on('connection', function(client) {
                 client.player.bulletSet[i] = 
                     {
                         owner: client.player.id,
-                        position: {
-                            x: 0,
-                            y: 0
-                        },
-                        size: {
-                            width: 8,
-                            height: 8
-                        },
-                        angle: 0,
+                        polygon: new SAT.Polygon(new SAT.Vector(0, 0), [
+                            new SAT.Vector(0, 0),
+                            new SAT.Vector(8, 0),
+                            new SAT.Vector(8, 8),
+                            new SAT.Vector(0, 8)
+                        ]),
                         lifetime: 1,
                         alive: false
                     };
@@ -106,18 +101,15 @@ function Update() {
     var bullets = getAllBullets();
     for (var i = 0; i < player.length; i++)
         {
-            player[i].angle += player[i].input.move;
+            player[i].polygon.angle += player[i].input.move;
 
-            player[i].position.x += planeSpeed * Math.cos(degrees_to_radians(player[i].angle));
-            player[i].position.y += planeSpeed * Math.sin(degrees_to_radians(player[i].angle));
+            player[i].polygon.pos.x += planeSpeed * Math.cos(degrees_to_radians(player[i].polygon.angle));
+            player[i].polygon.pos.y += planeSpeed * Math.sin(degrees_to_radians(player[i].polygon.angle));
             
-            if (player[i].position.x > GameSize.x) { player[i].position.x -= GameSize.x; }
-            else if (player[i].position.x < 0) { player[i].position.x += GameSize.x; }
-            if (player[i].position.y > GameSize.y) { player[i].position.y -= GameSize.y; }
-            else if (player[i].position.y < 0) { player[i].position.y += GameSize.y; }
-            
-            if (player[i].angle > 180) { player[i].angle -= 360; }
-            if (player[i].angle < -180) { player[i].angle += 360; }
+            if (player[i].polygon.pos.x > GameSize.x) { player[i].polygon.pos.x -= GameSize.x; }
+            else if (player[i].polygon.pos.x < 0) { player[i].polygon.pos.x += GameSize.x; }
+            if (player[i].polygon.pos.y > GameSize.y) { player[i].polygon.pos.y -= GameSize.y; }
+            else if (player[i].polygon.pos.y < 0) { player[i].polygon.pos.y += GameSize.y; }
             
             player[i].fireCD = Math.max(player[i].fireCD - 1/60, 0);
             if (player[i].input.fire > 0)
@@ -131,7 +123,7 @@ function Update() {
             
             //Collision
             
-            var ppCollision = CheckCollisions(player, player);
+            /*var ppCollision = CheckCollisions(player, player);
             for (var p1 = 0; p1 < ppCollision.length; p1++)
                 {
                     for (var p2 = 0; p2 < ppCollision[p1].length; p2++)
@@ -161,7 +153,7 @@ function Update() {
                                     //Do something.
                                 }
                         }
-                }
+                }*/
         }
     
     var bulletSpeed = 15;    
@@ -170,13 +162,13 @@ function Update() {
         {
             if (bullets[i].alive)
                 {                    
-                    bullets[i].position.x += bulletSpeed * Math.cos(degrees_to_radians(bullets[i].angle));
-                    bullets[i].position.y += bulletSpeed * Math.sin(degrees_to_radians(bullets[i].angle));
+                    bullets[i].polygon.pos.x += bulletSpeed * Math.cos(degrees_to_radians(bullets[i].polygon.angle));
+                    bullets[i].polygon.pos.y += bulletSpeed * Math.sin(degrees_to_radians(bullets[i].polygon.angle));
 
-                    if (bullets[i].position.x > GameSize.x) { bullets[i].position.x -= GameSize.x; }
-                    else if (bullets[i].position.x < 0) { bullets[i].position.x += GameSize.x; }
-                    if (bullets[i].position.y > GameSize.y) { bullets[i].position.y -= GameSize.y; }
-                    else if (bullets[i].position.y < 0) { bullets[i].position.y += GameSize.y; }
+                    if (bullets[i].polygon.pos.x > GameSize.x) { bullets[i].polygon.pos.x -= GameSize.x; }
+                    else if (bullets[i].polygon.pos.x < 0) { bullets[i].polygon.pos.x += GameSize.x; }
+                    if (bullets[i].polygon.pos.y > GameSize.y) { bullets[i].polygon.pos.y -= GameSize.y; }
+                    else if (bullets[i].polygon.pos.y < 0) { bullets[i].polygon.pos.y += GameSize.y; }
                     
                     bullets[i].lifetime -= 1/60;
                     if (bullets[i].lifetime <= 0)
@@ -187,7 +179,7 @@ function Update() {
         }
 }
 
-function CheckCollisions(array1, array2){
+/*function CheckCollisions(array1, array2){
     var collision = new Array(array1.length);
     
     for (var i = 0; i < collision.length; i++)
@@ -233,7 +225,7 @@ function CheckCollisions(array1, array2){
         }
     
     return collision;
-}
+}*/
 
 function getAllPlayers(){
     var players = [];
@@ -258,23 +250,6 @@ function getAllBullets(){
     return bullets;
 }
 
-
-function CheckCollisionAABB(objectA, objectB)
-{    
-    if ((objectA.position.x - (objectA.size.width / 2))                         < (objectB.position.x - (objectB.size.width / 2)) + objectB.size.width &&
-        (objectA.position.x - (objectA.size.width / 2)) + objectA.size.width    > (objectB.position.x - (objectB.size.width / 2)) &&
-        (objectA.position.y - (objectA.size.width / 2))                         < (objectB.position.y - (objectB.size.width / 2)) + objectB.size.width &&
-        (objectA.position.y - (objectA.size.width / 2)) + objectA.size.width    > (objectB.position.y - (objectB.size.width / 2)))
-        { return true; }
-    return false;
-}
-
-function CheckCollisionSAT(objectA, objectB)
-{
-    console.log("Checking SAT");
-    return false;
-}
-
 function FireBullet(player) {
     
     var quickFireRate = 75; // Delay in milliseconds
@@ -282,41 +257,41 @@ function FireBullet(player) {
     Bullet1();
     
     function Bullet1(){
-        player.bulletSet[0].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
-        player.bulletSet[0].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
-        player.bulletSet[0].angle = player.angle;
+        player.bulletSet[0].polygon.pos.x = player.polygon.pos.x + (64 * Math.cos(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[0].polygon.pos.y = player.polygon.pos.y + 16 + (64 * Math.sin(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[0].polygon.angle = player.polygon.angle;
         player.bulletSet[0].lifetime = bulletLifetime;
         player.bulletSet[0].alive = true;
         setTimeout(Bullet2, quickFireRate);
     }
     function Bullet2(){
-        player.bulletSet[1].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
-        player.bulletSet[1].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
-        player.bulletSet[1].angle = player.angle;
+        player.bulletSet[1].polygon.pos.x = player.polygon.pos.x + (64 * Math.cos(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[1].polygon.pos.y = player.polygon.pos.y + 16 + (64 * Math.sin(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[1].polygon.angle = player.polygon.angle;
         player.bulletSet[1].lifetime = bulletLifetime;
         player.bulletSet[1].alive = true;
         setTimeout(Bullet3, quickFireRate);
     }
     function Bullet3(){
-        player.bulletSet[2].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
-        player.bulletSet[2].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
-        player.bulletSet[2].angle = player.angle;
+        player.bulletSet[2].polygon.pos.x = player.polygon.pos.x + (64 * Math.cos(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[2].polygon.pos.y = player.polygon.pos.y + 16 + (64 * Math.sin(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[2].polygon.angle = player.polygon.angle;
         player.bulletSet[2].lifetime = bulletLifetime;
         player.bulletSet[2].alive = true;
         setTimeout(Bullet4, quickFireRate);
     }
     function Bullet4(){
-        player.bulletSet[3].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
-        player.bulletSet[3].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
-        player.bulletSet[3].angle = player.angle;
+        player.bulletSet[3].polygon.pos.x = player.polygon.pos.x + (64 * Math.cos(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[3].polygon.pos.y = player.polygon.pos.y + 16 + (64 * Math.sin(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[3].polygon.angle = player.polygon.angle;
         player.bulletSet[3].lifetime = bulletLifetime;
         player.bulletSet[3].alive = true;
         setTimeout(Bullet5, quickFireRate);
     }
     function Bullet5(){
-        player.bulletSet[4].position.x = player.position.x + (player.size.width * Math.cos(degrees_to_radians(player.angle)));
-        player.bulletSet[4].position.y = player.position.y + (player.size.width * Math.sin(degrees_to_radians(player.angle)));
-        player.bulletSet[4].angle = player.angle;
+        player.bulletSet[4].polygon.pos.x = player.polygon.pos.x + (64 * Math.cos(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[4].polygon.pos.y = player.polygon.pos.y + 16 + (64 * Math.sin(degrees_to_radians(player.polygon.angle)));
+        player.bulletSet[4].polygon.angle = player.polygon.angle;
         player.bulletSet[4].lifetime = bulletLifetime;
         player.bulletSet[4].alive = true;
     }
