@@ -1,21 +1,40 @@
 var Game = {};
 
+var GameSize = {
+    x: 2560,
+    y: 1600
+};
+
 var Input = {};
 
 function preload() {
     game = this;
     this.load.image('sprite', 'assets/Plane5.png');
-    this.load.image('bullet', 'assets/bulletM.png');
-    this.load.image('bg', 'assets/Background_Sky.png');
+    this.load.image('bullet', 'assets/Bullet_8x8.png');
+    this.load.image('bg', 'assets/Background_Sky_3.png');
 }
 
 function create() {
-    var bg = this.add.sprite(0, 0, 'bg');
-    bg.setDisplayOrigin(0, 0);
-    bg.scale = 1;
-    bg.width = 800;
-    bg.height = 600;
+    
+    var bg = new Array(4);
+    
+    bg[0] = this.add.sprite(0, 0, 'bg');
+    bg[1] = this.add.sprite(GameSize.x, 0, 'bg');
+    bg[2] = this.add.sprite(0, GameSize.y, 'bg');
+    bg[3] = this.add.sprite(GameSize.x, GameSize.y, 'bg');
+    
+    for (var i = 0; i < bg.length; i++)
+        {
+            bg[i].setDisplayOrigin(0, 0);
+            bg[i].scale = 2;
+            bg[i].width = 1280;
+            bg[i].height = 800;
+            bg[i].setOrigin(0.5, 0.5);
+        }
+    
     Game.playerMap = {};
+    
+    game.cameras.main.setZoom(0.7);
     
     Input.move = 0;
     Input.fire = 0;
@@ -50,4 +69,38 @@ function update() {
 
 Game.addNewPlayer = function(id, polygon, colour, bulletSet){
     Game.playerMap[id] = new Player(id, polygon, colour, bulletSet);
+}
+
+Game.mirror = function(x, y){
+    var mirror = {
+        x: 0,
+        y: 0
+    }
+    
+    var GameSize = {
+        x: 2560,
+        y: 1600
+    };
+    
+    var xpos = x;
+    var ypos = y;
+        
+    if (xpos < GameSize.x / 2)
+        {
+            mirror.x = xpos + GameSize.x;
+        }
+    else
+        {
+            mirror.x = xpos - GameSize.x;
+        }
+    if (ypos < GameSize.y / 2)
+        {
+            mirror.y = ypos + GameSize.y;
+        }
+    else
+        {
+            mirror.y = ypos - GameSize.y;
+        }
+    
+    return mirror;
 }

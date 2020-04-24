@@ -4,6 +4,11 @@ var server = require('http').createServer();
 var io = require('socket.io')(server);
 var SAT = require('sat');
 
+var GameSize = {
+    x: 2560,
+    y: 1600
+};
+
 io.on('connection', function(client) {
     
     client.on('test', function() {
@@ -13,18 +18,21 @@ io.on('connection', function(client) {
     client.on('newplayer',function(colour) {
         client.player = {
             id: server.lastPlayerID++,
-            polygon: new SAT.Polygon(new SAT.Vector(0, 0), [
+            polygon: new SAT.Polygon(new SAT.Vector(randomInt(100, 1180), randomInt(100, 700)), [
                 new SAT.Vector(0, 0),
                 new SAT.Vector(64, 0),
                 new SAT.Vector(64, 32),
                 new SAT.Vector(0, 32)
             ]),
+            health: 5,
+            alive: true,
             colour: colour,
             input: {
                 move: 0,
                 fire: 0
             },
-            fireCD: 0
+            fireCD: 0,
+            score: 0
         };
         
         client.player.bulletSet = new Array(5);
@@ -45,8 +53,10 @@ io.on('connection', function(client) {
             }
         
         console.log('connecting: ' + client.player.id);
-        client.emit('allplayers', getAllPlayers());
-        client.broadcast.emit('newplayer',client.player);
+        client.emit('allplayers', getAllPlayers(), GameSize);
+        client.emit('getSelf', client.player.id);
+        
+        client.broadcast.emit('newplayer', client.player);
 
         client.on('disconnect',function() {
             io.emit('remove', client.player.id);
@@ -77,12 +87,6 @@ server.listen(PORT, function(){
     console.log('Listening on ' + server.address().port);
 });
 
-
-var GameSize = {
-    x: 1280,
-    y: 800
-};
-
 var BulletArray = {};
 
 var planeSpeed = 5;
@@ -101,59 +105,68 @@ function Update() {
     var bullets = getAllBullets();
     for (var i = 0; i < player.length; i++)
         {
-            player[i].polygon.angle += player[i].input.move;
+            if (player[i].alive)
+                {
+                    player[i].polygon.angle += player[i].input.move;
 
-            player[i].polygon.pos.x += planeSpeed * Math.cos(degrees_to_radians(player[i].polygon.angle));
-            player[i].polygon.pos.y += planeSpeed * Math.sin(degrees_to_radians(player[i].polygon.angle));
-            
-            if (player[i].polygon.pos.x > GameSize.x) { player[i].polygon.pos.x -= GameSize.x; }
-            else if (player[i].polygon.pos.x < 0) { player[i].polygon.pos.x += GameSize.x; }
-            if (player[i].polygon.pos.y > GameSize.y) { player[i].polygon.pos.y -= GameSize.y; }
-            else if (player[i].polygon.pos.y < 0) { player[i].polygon.pos.y += GameSize.y; }
-            
-            player[i].fireCD = Math.max(player[i].fireCD - 1/60, 0);
-            if (player[i].input.fire > 0)
-                {
-                    if (player[i].fireCD <= 0)
+                    player[i].polygon.pos.x += planeSpeed * Math.cos(degrees_to_radians(player[i].polygon.angle));
+                    player[i].polygon.pos.y += planeSpeed * Math.sin(degrees_to_radians(player[i].polygon.angle));
+
+                    if (player[i].polygon.pos.x > GameSize.x) { player[i].polygon.pos.x -= GameSize.x; }
+                    else if (player[i].polygon.pos.x < 0) { player[i].polygon.pos.x += GameSize.x; }
+                    if (player[i].polygon.pos.y > GameSize.y) { player[i].polygon.pos.y -= GameSize.y; }
+                    else if (player[i].polygon.pos.y < 0) { player[i].polygon.pos.y += GameSize.y; }
+
+                    player[i].fireCD = Math.max(player[i].fireCD - 1/60, 0);
+                    if (player[i].input.fire > 0)
                         {
-                            FireBullet(player[i]);
-                            player[i].fireCD = fireRate;
-                        }
-                }
-            
-            //Collision
-            
-            /*var ppCollision = CheckCollisions(player, player);
-            for (var p1 = 0; p1 < ppCollision.length; p1++)
-                {
-                    for (var p2 = 0; p2 < ppCollision[p1].length; p2++)
-                        {
-                            if (ppCollision[p1][p2] && ppCollision[p2][p1])
+                            if (player[i].fireCD <= 0)
                                 {
-                                    // Ensures it won't be called twice.
-                                    ppCollision[p1][p2] = false;
-                                    ppCollision[p2][p1] = false;
-                                    
-                                    //Do something.
+                                    FireBullet(player[i]);
+                                    player[i].fireCD = fireRate;
+                                }
+                        }
+
+                    /*for (var p = 0; p < player.length; p++)
+                        {
+                            if (player[p].alive && i != p)
+                                {
+                                    var response = new SAT.Response();
+                                    var collided = SAT.testPolygonPolygon(player[i].polygon, player[p].polygon, response);
+                                    if (collided)
+                                        {
+                                            // Do something.
+                                            console.log("Player collision");
+                                            player[i].health --;
+                                        }
+                                    response.clear();
+                                }
+                        }*/
+
+                    for (var b = 0; b < bullets.length; b++)
+                        {
+                            if (bullets[b].alive && bullets[b].owner != player[i].id)
+                                {
+                                    var response = new SAT.Response();
+                                    var collided = SAT.testPolygonPolygon(player[i].polygon, bullets[b].polygon, response);
+                                    if (collided)
+                                        {
+                                            // Do something.
+                                            bullets[b].alive = false;
+                                            player[i].health --;
+                                            
+                                            if (player[i].health <= 0)
+                                                {
+                                                    player[i].alive = false;
+                                                    setTimeout(RespawnPlayer, 2000, player[i]);
+                                                    ScorePoint(bullets[b].owner);
+                                                }
+                                        }
+                                    response.clear();
                                 }
                         }
                 }
             
-            var pbCollision = CheckCollisions(player, bullets);
-            for (var p = 0; p < pbCollision.length; p++)
-                {
-                    for (var b = 0; b < pbCollision[p1].length; b++)
-                        {
-                            if (pbCollision[p][b] && pbCollision[p][b])
-                                {
-                                    // Ensures it won't be called twice.
-                                    pbCollision[p][b] = false;
-                                    pbCollision[b][p] = false;
-                                    
-                                    //Do something.
-                                }
-                        }
-                }*/
         }
     
     var bulletSpeed = 15;    
@@ -178,54 +191,6 @@ function Update() {
                 }
         }
 }
-
-/*function CheckCollisions(array1, array2){
-    var collision = new Array(array1.length);
-    
-    for (var i = 0; i < collision.length; i++)
-        {
-            collision[i] = new Array(array2.length);
-        }
-    for (var x = 0; x < collision.length; x++)
-        {
-            for (var y = 0; y < collision[x].length; y++)
-                {
-                    collision[x][y] = false;
-                }
-        }
-    
-    for (o1 = 0; o1 < collision.length; o1++)
-        {
-            for (o2 = 0; o2 < collision[o1].length; o2++)
-                {
-                    if (!collision[o1][o2] && o1 != o2)
-                        {
-                            if (CheckCollisionAABB(array1[o1], array2[o2]))
-                                {
-                                    collision[o1][o2] = true;
-                                    collision[o2][o1] = true;
-                                }
-                        }
-                }
-        }
-    
-    for (o1 = 0; o1 < collision.length; o1++)
-        {
-            for (o2 = 0; o2 < collision[o1].length; o2++)
-                {
-                    if (collision[o1][o2])
-                        {
-                            if (!CheckCollisionSAT(array1[o1], array2[o2]))
-                                {
-                                    collision[o1][o2] = false;
-                                    collision[o2][o1] = false;
-                                }
-                        }
-                }
-        }
-    
-    return collision;
-}*/
 
 function getAllPlayers(){
     var players = [];
@@ -295,6 +260,35 @@ function FireBullet(player) {
         player.bulletSet[4].lifetime = bulletLifetime;
         player.bulletSet[4].alive = true;
     }
+}
+
+function ScorePoint(id)
+{
+    var player = getAllPlayers();
+    
+    var scoringPlayer
+    
+    for (var i = 0; i < player.length; i++)
+        {
+            if (player[i].id == id)
+                {
+                    scoringPlayer = player[i];
+                    break;
+                }
+        }
+    
+    scoringPlayer.score ++;
+    
+    console.log("Player " + id + " score: " + scoringPlayer.score);
+}
+
+function RespawnPlayer(player)
+{
+    player.polygon.pos.x = randomInt(100, 1180);
+    player.polygon.pos.y = randomInt(100, 700);
+    player.polygon.angle = 0;
+    player.health = 5;
+    player.alive = true;
 }
 
 function randomInt(low, high) {

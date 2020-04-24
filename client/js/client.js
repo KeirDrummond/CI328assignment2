@@ -24,7 +24,6 @@ Client.update = function(){
 
 Client.socket.on('newplayer',function(data){
     Game.addNewPlayer(data.id, data.polygon, data.colour, data.bulletSet);
-    
 });
 
 Client.socket.on('leftplayer',function(data){
@@ -34,11 +33,16 @@ Client.socket.on('leftplayer',function(data){
     
 });
 
-Client.socket.on('allplayers', function(data){
+Client.socket.on('allplayers', function(data, size){
+    GameSize = size;
     for (var i = 0; i < data.length; i++){
         Game.addNewPlayer(data[i].id, data[i].polygon, data[i].colour, data[i].bulletSet);
     }
     
+});
+
+Client.socket.on('getSelf', function(id){
+    game.cameras.main.startFollow(Game.playerMap[id], true);
 });
 
 Client.socket.on('update', function(data){
@@ -46,6 +50,7 @@ Client.socket.on('update', function(data){
         Game.playerMap[data[i].id].x = data[i].polygon.pos.x;
         Game.playerMap[data[i].id].y = data[i].polygon.pos.y;
         Game.playerMap[data[i].id].angle = data[i].polygon.angle;
+        Game.playerMap[data[i].id].alive = data[i].alive;
         Game.playerMap[data[i].id].bulletSet = data[i].bulletSet;
     }
 })
