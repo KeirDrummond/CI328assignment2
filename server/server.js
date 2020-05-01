@@ -15,9 +15,10 @@ io.on('connection', function(client) {
         console.log('test recieved');
     });
     
-    client.on('newplayer',function(colour) {
+    client.on('newplayer',function(name, colour) {
         client.player = {
             id: server.lastPlayerID++,
+            displayName: name,
             polygon: new SAT.Polygon(new SAT.Vector(randomInt(100, 1180), randomInt(100, 700)), [
                 new SAT.Vector(0, 0),
                 new SAT.Vector(64, 0),
@@ -72,7 +73,7 @@ io.on('connection', function(client) {
         client.on('inputfire',function(input) {
             input = Math.max(0, Math.min(1, input));
             client.player.input.fire = input;
-        })
+        });
         
         client.on('update', function() {
             client.emit('update', getAllPlayers(), BulletArray);
@@ -127,22 +128,6 @@ function Update() {
                                 }
                         }
 
-                    /*for (var p = 0; p < player.length; p++)
-                        {
-                            if (player[p].alive && i != p)
-                                {
-                                    var response = new SAT.Response();
-                                    var collided = SAT.testPolygonPolygon(player[i].polygon, player[p].polygon, response);
-                                    if (collided)
-                                        {
-                                            // Do something.
-                                            console.log("Player collision");
-                                            player[i].health --;
-                                        }
-                                    response.clear();
-                                }
-                        }*/
-
                     for (var b = 0; b < bullets.length; b++)
                         {
                             if (bullets[b].alive && bullets[b].owner != player[i].id)
@@ -153,14 +138,7 @@ function Update() {
                                         {
                                             // Do something.
                                             bullets[b].alive = false;
-                                            player[i].health --;
-                                            
-                                            if (player[i].health <= 0)
-                                                {
-                                                    player[i].alive = false;
-                                                    setTimeout(RespawnPlayer, 2000, player[i]);
-                                                    ScorePoint(bullets[b].owner);
-                                                }
+                                            PlayerDamage(player[i], 1, bullets[b].owner);
                                         }
                                     response.clear();
                                 }
@@ -190,6 +168,20 @@ function Update() {
                         }
                 }
         }
+    
+    //io.emit('update', getAllPlayers(), BulletArray);
+}
+
+function PlayerDamage(player, damage, otherplayer) {
+    player.health -= damage;
+    io.emit('takedamage', player.id, player.health);
+    
+    if (player.health <= 0)
+    {
+        player.alive = false;
+        setTimeout(RespawnPlayer, 2000, player);
+        ScorePoint(otherplayer);
+    }
 }
 
 function getAllPlayers(){
@@ -279,6 +271,7 @@ function ScorePoint(id)
     
     scoringPlayer.score ++;
     
+    io.emit('score', getAllPlayers());
     console.log("Player " + id + " score: " + scoringPlayer.score);
 }
 
@@ -289,6 +282,8 @@ function RespawnPlayer(player)
     player.polygon.angle = 0;
     player.health = 5;
     player.alive = true;
+    
+    io.emit('respawn', player.id);
 }
 
 function randomInt(low, high) {

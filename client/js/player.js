@@ -1,8 +1,9 @@
 class Player extends Phaser.GameObjects.GameObject {
-    constructor(id, polygon, colour, bulletSet) {
+    constructor(id, displayName, polygon, colour, bulletSet) {
         super(game, 'Player');
         
         this.id = id;
+        this.displayName = displayName;
         this.x = polygon.pos.x;
         this.y = polygon.pos.y;
         this.angle = polygon.angle;
@@ -10,7 +11,8 @@ class Player extends Phaser.GameObjects.GameObject {
         this.colour = colour;
         this.bulletSet = bulletSet;
         
-        console.log(polygon.pos);
+        this.health = 5;
+        this.score = 0;
         
         this.sprite = game.add.sprite(this.x, this.y, 'sprite');
         this.sprite.setOrigin(0, 0);
@@ -43,7 +45,21 @@ class Player extends Phaser.GameObjects.GameObject {
         this.clone[2] = game.add.sprite(mirror.x, mirror.y, 'sprite');
         this.clone[2].setOrigin(0, 0);
         this.clone[2].angle = this.angle;
-        this.clone[2].tint = this.colour;        
+        this.clone[2].tint = this.colour;
+    }
+    
+    TakeDamage(newHealth) {
+        this.health = newHealth;
+        if (this == Game.localPlayer){
+            Game.UserInterface.Health.SetHealth(newHealth);
+        }        
+    }
+    
+    Respawn() {
+        this.health = 5;
+        if (this == Game.localPlayer){
+            Game.UserInterface.Health.SetHealth(this.health);
+        }
     }
     
     OnDisconnect() {
