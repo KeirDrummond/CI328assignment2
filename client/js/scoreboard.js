@@ -19,16 +19,22 @@ class ScoreBoard {
         this.list = [];
     }
     
+    getScores() {
+        return this.list;
+    }
+    
     UpdateScore(){
         this.list.length = 0;
         var i = 0;
         
-        var listtemp = this.list;
+        for (var t = 0; t < this.textList.length; t++){
+            this.textList[t].setVisible(false);
+        }
         
-        Object.keys(Game.playerMap).forEach(function(player){
-            if (i < 10) { listtemp.push(Game.playerMap[player]); }
-        });
-        
+        for (var player in Game.playerMap) {
+            if (i < 10) { this.list.push(Game.playerMap[player]); }
+        }
+
         this.list.sort(function(a, b) {
            return b.score - a.score; 
         });
@@ -36,7 +42,7 @@ class ScoreBoard {
         for (var i = 0; i < this.list.length; i++)
             {
                 this.textList[i].setVisible(true);
-                this.textList[i].setText(this.list[i].displayName + ': ' + this.list[i].score);
+                this.textList[i].setText(this.list[i].displayName + " " + this.list[i].id + ': ' + this.list[i].score);
                 this.textList[i].setTint(this.list[i].colour);
             }
         

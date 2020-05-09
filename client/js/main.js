@@ -6,7 +6,8 @@ var config = {
     },
     width: 1280,
     height: 800,
-    scene: [MainMenu, GameScreen]
+    scene: [MainMenu, GameScreen, GameOver]
 };
 
 var game = new Phaser.Game(config);
+var IsInGame = false;

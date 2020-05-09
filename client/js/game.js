@@ -19,9 +19,23 @@ class GameScreen extends Phaser.Scene {
         this.load.image('bg', 'assets/Background_Sky_3.png');
         this.load.image('heart', 'assets/Heart_16x16.png');
         this.load.image('scoreboard', 'assets/Scoreboard_220x300.png');
+        
+        this.load.audio('music', 'assets/GameMusic.wav');
+        this.load.audio('fire', 'assets/shotburst_01.wav');
+        this.load.audio('explosion', 'assets/explosion.wav');
+        this.load.audio('damage', 'assets/damage.wav');
     }
 
     create() {
+        Client.socket.connect();
+        IsInGame = true;
+        
+        var musicConfig = {
+            volume: 0.1,
+            loop: true
+        }
+        var music = this.sound.add('music', musicConfig);
+        music.play();
 
         var bg = new Array(4);
 
@@ -41,7 +55,10 @@ class GameScreen extends Phaser.Scene {
 
         Game.playerMap = {};
 
-        Input.move = 0;
+        Input.move = {
+            up: false,
+            down: false
+        };
         Input.fire = 0;
 
         var testKey = this.input.keyboard.addKey('ENTER');
@@ -53,15 +70,16 @@ class GameScreen extends Phaser.Scene {
             space: 'SPACE'
         });
         
-        inputKeys.up.on('down', function(event) { Input.move -= 1; Input.move = Math.max(Input.move, -1); Client.inputMove(Input.move); });
-        inputKeys.up.on('up', function(event) { Input.move += 1; Input.move = Math.min(Input.move, 1); Client.inputMove(Input.move); });
+        inputKeys.up.on('down', function(event) { Input.move.up = true; Client.inputMove(Input.move); });
+        inputKeys.up.on('up', function(event) { Input.move.up = false; Client.inputMove(Input.move); });
 
-        inputKeys.down.on('down', function(event) { Input.move += 1; Input.move = Math.min(Input.move, 1); Client.inputMove(Input.move); });
-        inputKeys.down.on('up', function(event) { Input.move -= 1; Input.move = Math.max(Input.move, -1); Client.inputMove(Input.move); });
+        inputKeys.down.on('down', function(event) { Input.move.down = true; Client.inputMove(Input.move); });
+        inputKeys.down.on('up', function(event) { Input.move.down = false; Client.inputMove(Input.move); });
 
         inputKeys.space.on('down', function(event) { Input.fire = 1; Client.inputFire(Input.fire); });
         inputKeys.space.on('up', function(event) { Input.fire = 0; Client.inputFire(Input.fire); });
 
+        Game.SoundEffectHandler = new SoundEffectHandler();
         Game.UserInterface = new UserInterface();
 
         var randomColour = Math.random() * 0xffffff
@@ -113,4 +131,9 @@ Game.mirror = function(x, y){
         }
     
     return mirror;
+}
+
+Game.GameOver = function(){
+    game.sound.stopAll();
+    game.scene.start('GameOver', { scores: Game.UserInterface.ScoreBoard.getScores() });
 }

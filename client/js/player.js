@@ -18,7 +18,8 @@ class Player extends Phaser.GameObjects.GameObject {
         this.sprite.setOrigin(0, 0);
         this.sprite.angle = this.angle;
         this.sprite.tint = this.colour;
-        console.log("New player added");
+        
+        var fireSound = game.sound.add('fire');
         
         this.bulletSprites = new Array(5);
         for (var i = 0; i < this.bulletSprites.length; i++)
@@ -49,10 +50,14 @@ class Player extends Phaser.GameObjects.GameObject {
     }
     
     TakeDamage(newHealth) {
+        Game.SoundEffectHandler.Damage(this.getSprites());
         this.health = newHealth;
         if (this == Game.localPlayer){
             Game.UserInterface.Health.SetHealth(newHealth);
-        }        
+        }
+        if (this.health <= 0) {
+            Game.SoundEffectHandler.Explosion(this.getSprites());
+        }
     }
     
     Respawn() {
@@ -73,6 +78,31 @@ class Player extends Phaser.GameObjects.GameObject {
         this.clone[1].destroy();
         this.clone[2].destroy();
         this.destroy();
+    }
+    
+    Fire(){
+        Game.SoundEffectHandler.Fire(this.getSprites());
+    }
+    
+    getSprites(){
+        var sprite = new Array(4);
+        sprite[0] = {
+            x: this.x,
+            y: this.y
+        }
+        sprite[1] = {
+            x: this.clone[0].x,
+            y: this.clone[0].y
+        }
+        sprite[2] = {
+            x: this.clone[1].x,
+            y: this.clone[1].y
+        }
+        sprite[3] = {
+            x: this.clone[2].x,
+            y: this.clone[2].y
+        }
+        return sprite;
     }
     
     update() {

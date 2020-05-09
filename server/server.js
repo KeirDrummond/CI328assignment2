@@ -11,10 +11,6 @@ var GameSize = {
 
 io.on('connection', function(client) {
     
-    client.on('test', function() {
-        console.log('test recieved');
-    });
-    
     client.on('newplayer',function(name, colour) {
         client.player = {
             id: server.lastPlayerID++,
@@ -56,9 +52,8 @@ io.on('connection', function(client) {
         console.log('connecting: ' + client.player.id);
         client.emit('allplayers', getAllPlayers(), GameSize);
         client.emit('getSelf', client.player.id);
-        
-        client.broadcast.emit('newplayer', client.player);
 
+        client.broadcast.emit('newplayer', client.player);
         client.on('disconnect',function() {
             io.emit('remove', client.player.id);
             client.broadcast.emit('leftplayer', client.player);
@@ -74,10 +69,6 @@ io.on('connection', function(client) {
             input = Math.max(0, Math.min(1, input));
             client.player.input.fire = input;
         });
-        
-        client.on('update', function() {
-            client.emit('update', getAllPlayers(), BulletArray);
-        });
     });  
 });
 
@@ -92,7 +83,8 @@ var BulletArray = {};
 
 var planeSpeed = 5;
 var fireRate = 1.5;
-var bulletLifetime = 0.75;
+var bulletLifetime = 1;
+var rotationSpeed = 1.5;
 
 function degrees_to_radians(degrees)
 {
@@ -108,7 +100,7 @@ function Update() {
         {
             if (player[i].alive)
                 {
-                    player[i].polygon.angle += player[i].input.move;
+                    player[i].polygon.angle += player[i].input.move * rotationSpeed;
 
                     player[i].polygon.pos.x += planeSpeed * Math.cos(degrees_to_radians(player[i].polygon.angle));
                     player[i].polygon.pos.y += planeSpeed * Math.sin(degrees_to_radians(player[i].polygon.angle));
@@ -169,7 +161,7 @@ function Update() {
                 }
         }
     
-    //io.emit('update', getAllPlayers(), BulletArray);
+    io.emit('update', getAllPlayers(), BulletArray);
 }
 
 function PlayerDamage(player, damage, otherplayer) {
@@ -208,6 +200,10 @@ function getAllBullets(){
 }
 
 function FireBullet(player) {
+    
+    io.emit('fire', player.id);
+    
+    var players = [];
     
     var quickFireRate = 75; // Delay in milliseconds
     
@@ -273,6 +269,10 @@ function ScorePoint(id)
     
     io.emit('score', getAllPlayers());
     console.log("Player " + id + " score: " + scoringPlayer.score);
+    
+    if (scoringPlayer.score >= 10) {
+        io.emit('end');
+    }
 }
 
 function RespawnPlayer(player)

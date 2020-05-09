@@ -4,15 +4,23 @@ class MainMenu extends Phaser.Scene {
     }
     
     preload() {
-        this.load.image('image', 'assets/Hill_Background.png');
+        this.load.image('background', 'assets/MenuNew2.png');
+        this.load.image('logo', 'assets/FlyingAcesNewBevel.png');
+        this.load.image('start', 'assets/StartButton.png');
     }
     
     create() {
-        var startButton = this.add.sprite(0, 0, 'image');
+        IsInGame = false;
+        var background = this.add.sprite(0, 0, 'background');
+        background.setOrigin(0, 0);
+        var logo = this.add.sprite(640, 300, 'logo');
+        logo.setOrigin(0.5, 0.5);
+        var startButton = this.add.sprite(640, 700, 'start');
+        startButton.setOrigin(0.5, 0.5);
         startButton.setInteractive();
         startButton.on('pointerdown', () => {
             this.scene.start('GameScreen');
-        })
+        });
     }
     
 }
