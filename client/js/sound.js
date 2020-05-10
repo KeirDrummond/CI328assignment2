@@ -1,6 +1,9 @@
+var music;
 var fireSound;
 var damageSound;
 var explosionSound;
+
+var muted = false;
 
 var decayStart = 500;
 var decayRate = 200;
@@ -11,6 +14,35 @@ class SoundEffectHandler {
         fireSound = game.sound.add('fire');
         damageSound = game.sound.add('damage');
         explosionSound = game.sound.add('explosion');
+    }
+    
+    MuteAll() {
+        muted = true;
+        music.mute = true;
+        fireSound.mute = true;
+        damageSound.mute = true;
+        explosionSound.mute = true;
+    }
+    
+    UnmuteAll() {
+        muted = false;
+        music.mute = false;
+        fireSound.mute = false;
+        damageSound.mute = false;
+        explosionSound.mute = false;
+    }
+    
+    IsMuted() {
+        return muted;
+    }
+    
+    StartMusic(){
+        var musicConfig = {
+            volume: 0.1,
+            loop: true
+        }
+        music = game.sound.add('music', musicConfig);
+        music.play();
     }
     
     Fire(sprite){

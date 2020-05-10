@@ -19,6 +19,8 @@ class GameScreen extends Phaser.Scene {
         this.load.image('bg', 'assets/Background_Sky_3.png');
         this.load.image('heart', 'assets/Heart_16x16.png');
         this.load.image('scoreboard', 'assets/Scoreboard_220x300.png');
+        this.load.image('muted', 'assets/Mute.png');
+        this.load.image('unmuted', 'assets/Unmuted.png');
         
         this.load.audio('music', 'assets/GameMusic.wav');
         this.load.audio('fire', 'assets/shotburst_01.wav');
@@ -29,13 +31,26 @@ class GameScreen extends Phaser.Scene {
     create() {
         Client.socket.connect();
         IsInGame = true;
+                
+        Game.UserInterface = new UserInterface();
         
-        var musicConfig = {
-            volume: 0.1,
-            loop: true
-        }
-        var music = this.sound.add('music', musicConfig);
-        music.play();
+        Game.SoundEffectHandler = new SoundEffectHandler();
+        Game.SoundEffectHandler.StartMusic();
+        
+        var muteButton = this.add.sprite(1240, 40, 'unmuted').setScrollFactor(0);
+        muteButton.setDepth(1);
+        muteButton.setOrigin(0.5, 0.5);
+        muteButton.setInteractive();
+        muteButton.on('pointerdown', () => {
+            if (!Game.SoundEffectHandler.IsMuted()) {
+                Game.SoundEffectHandler.MuteAll();
+                muteButton.setTexture('muted');
+            }
+            else {
+                Game.SoundEffectHandler.UnmuteAll();
+                muteButton.setTexture('unmuted');
+            }
+        });
 
         var bg = new Array(4);
 
@@ -78,9 +93,6 @@ class GameScreen extends Phaser.Scene {
 
         inputKeys.space.on('down', function(event) { Input.fire = 1; Client.inputFire(Input.fire); });
         inputKeys.space.on('up', function(event) { Input.fire = 0; Client.inputFire(Input.fire); });
-
-        Game.SoundEffectHandler = new SoundEffectHandler();
-        Game.UserInterface = new UserInterface();
 
         var randomColour = Math.random() * 0xffffff
         Client.askNewPlayer('Player', randomColour);
