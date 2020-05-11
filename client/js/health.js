@@ -14,6 +14,12 @@ class Health {
         this.heart[2] = game.add.sprite(pos.x - margin * 2, pos.y, 'heart').setScrollFactor(0);
         this.heart[3] = game.add.sprite(pos.x - margin * 3, pos.y, 'heart').setScrollFactor(0);
         this.heart[4] = game.add.sprite(pos.x - margin * 4, pos.y, 'heart').setScrollFactor(0);
+        
+        this.heart[0].setDepth(1);
+        this.heart[1].setDepth(1);
+        this.heart[2].setDepth(1);
+        this.heart[3].setDepth(1);
+        this.heart[4].setDepth(1);
     }
     
     SetHealth(health) {
