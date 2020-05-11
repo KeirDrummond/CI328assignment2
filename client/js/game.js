@@ -29,14 +29,17 @@ class GameScreen extends Phaser.Scene {
     }
 
     create() {
+        // Connects to the client if not connected.
         Client.socket.connect();
         IsInGame = true;
-                
-        Game.UserInterface = new UserInterface();
         
+        // Creates the user interface.
+        Game.UserInterface = new UserInterface();
+        // Creates the sound handler for music and sound effects.
         Game.SoundEffectHandler = new SoundEffectHandler();
         Game.SoundEffectHandler.StartMusic();
         
+        // The mute button.
         var muteButton = this.add.sprite(1240, 40, 'unmuted').setScrollFactor(0);
         muteButton.setDepth(1);
         muteButton.setOrigin(0.5, 0.5);
@@ -52,8 +55,8 @@ class GameScreen extends Phaser.Scene {
             }
         });
 
+        // The background sprites.
         var bg = new Array(4);
-
         bg[0] = this.add.sprite(0, 0, 'bg');
         bg[1] = this.add.sprite(GameSize.x, 0, 'bg');
         bg[2] = this.add.sprite(0, GameSize.y, 'bg');
@@ -68,8 +71,10 @@ class GameScreen extends Phaser.Scene {
                 bg[i].setOrigin(0.5, 0.5);
             }
 
+        // Creates the player map.
         Game.playerMap = {};
 
+        // Input.
         Input.move = {
             up: false,
             down: false
@@ -94,12 +99,13 @@ class GameScreen extends Phaser.Scene {
         inputKeys.space.on('down', function(event) { Input.fire = 1; Client.inputFire(Input.fire); });
         inputKeys.space.on('up', function(event) { Input.fire = 0; Client.inputFire(Input.fire); });
 
+        // Chooses a random colour and asks the server to create a player with that colour.
         var randomColour = Math.random() * 0xffffff
         Client.askNewPlayer('Player', randomColour);
     }
 
+    // Updates the players in the player map with the last values received from the server.
     update() {
-        Client.update();
         Object.keys(Game.playerMap).forEach(function(player){
             Game.playerMap[player].update();
         });
@@ -107,10 +113,12 @@ class GameScreen extends Phaser.Scene {
     
 }
 
+// Adds a new player to the player map.
 Game.addNewPlayer = function(id, displayName, polygon, colour, bulletSet){
     Game.playerMap[id] = new Player(id, displayName, polygon, colour, bulletSet);
 }
 
+// Utility function for creating clone spries.
 Game.mirror = function(x, y){
     var mirror = {
         x: 0,
@@ -145,6 +153,7 @@ Game.mirror = function(x, y){
     return mirror;
 }
 
+// The game over function, called when the server declares that the game is over.
 Game.GameOver = function(){
     game.sound.stopAll();
     game.scene.start('GameOver', { scores: Game.UserInterface.ScoreBoard.getScores() });

@@ -1,5 +1,6 @@
 class Health {
     constructor() {
+        // Initialises heart sprites.
         this.heart = new Array(5);
         
         var pos = {
@@ -22,6 +23,7 @@ class Health {
         this.heart[4].setDepth(1);
     }
     
+    // Sets the health display based on the client controlled player object.
     SetHealth(health) {
         switch(health) {
             case 0:

@@ -1,3 +1,4 @@
+// Sound references.
 var music;
 var fireSound;
 var damageSound;
@@ -5,18 +6,21 @@ var explosionSound;
 
 var muted = false;
 
+// How far away does a sound need to be to start becoming quieter and at what rate does the volume decrease.
 var decayStart = 500;
 var decayRate = 200;
 
 class SoundEffectHandler {
     
     constructor() {
+        // Creates the sound objects.
         fireSound = game.sound.add('fire');
         damageSound = game.sound.add('damage');
         explosionSound = game.sound.add('explosion');
     }
     
     MuteAll() {
+        // Mutes all sounds.
         muted = true;
         music.mute = true;
         fireSound.mute = true;
@@ -25,6 +29,7 @@ class SoundEffectHandler {
     }
     
     UnmuteAll() {
+        // Unmutes all sounds.
         muted = false;
         music.mute = false;
         fireSound.mute = false;
@@ -33,10 +38,12 @@ class SoundEffectHandler {
     }
     
     IsMuted() {
+        // Returns the muted state.
         return muted;
     }
     
     StartMusic(){
+        // The game background music.
         var musicConfig = {
             volume: 0.1,
             loop: true
@@ -45,6 +52,7 @@ class SoundEffectHandler {
         music.play();
     }
     
+    // Plays a fire sound at a position.
     Fire(sprite){
         var myLoc = {
             x: Game.localPlayer.x,
@@ -67,6 +75,7 @@ class SoundEffectHandler {
         fireSound.play(config);
     }
     
+    // Plays a damage sound at a position.
     Damage(sprite){
         var myLoc = {
             x: Game.localPlayer.x,
@@ -89,6 +98,7 @@ class SoundEffectHandler {
         damageSound.play(config);
     }
     
+    // Plays an explosion sound at a position.
     Explosion(sprite){
         var myLoc = {
             x: Game.localPlayer.x,

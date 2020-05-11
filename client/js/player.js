@@ -2,6 +2,7 @@ class Player extends Phaser.GameObjects.GameObject {
     constructor(id, displayName, polygon, colour, bulletSet) {
         super(game, 'Player');
         
+        // Initialises the object properties.
         this.id = id;
         this.displayName = displayName;
         this.x = polygon.pos.x;
@@ -14,6 +15,7 @@ class Player extends Phaser.GameObjects.GameObject {
         this.health = 5;
         this.score = 0;
         
+        // The main sprite.
         this.sprite = game.add.sprite(this.x, this.y, 'sprite');
         this.sprite.setOrigin(0, 0);
         this.sprite.angle = this.angle;
@@ -21,6 +23,7 @@ class Player extends Phaser.GameObjects.GameObject {
         
         var fireSound = game.sound.add('fire');
         
+        // Constructs the associated bullets.
         this.bulletSprites = new Array(5);
         for (var i = 0; i < this.bulletSprites.length; i++)
             {
@@ -28,7 +31,7 @@ class Player extends Phaser.GameObjects.GameObject {
             }
         
         // Clones
-        
+        // Each clone is placed at the opposite end of the world to create the illusion of a world wrap.
         this.clone = new Array(3);
         
         var mirror = Game.mirror(this.x, this.y);
@@ -49,6 +52,7 @@ class Player extends Phaser.GameObjects.GameObject {
         this.clone[2].tint = this.colour;
     }
     
+    // When the player takes damage.
     TakeDamage(newHealth) {
         Game.SoundEffectHandler.Damage(this.getSprites());
         this.health = newHealth;
@@ -60,6 +64,7 @@ class Player extends Phaser.GameObjects.GameObject {
         }
     }
     
+    // When the player respawns.
     Respawn() {
         this.health = 5;
         if (this == Game.localPlayer){
@@ -67,6 +72,7 @@ class Player extends Phaser.GameObjects.GameObject {
         }
     }
     
+    // When the player disconnects.
     OnDisconnect() {
         for (var i = 0; i < this.bulletSprites.length; i++)
             {
@@ -80,10 +86,12 @@ class Player extends Phaser.GameObjects.GameObject {
         this.destroy();
     }
     
+    // When the player fires.
     Fire(){
         Game.SoundEffectHandler.Fire(this.getSprites());
     }
     
+    // Utility function to get all of the main body sprites.
     getSprites(){
         var sprite = new Array(4);
         sprite[0] = {
@@ -105,6 +113,7 @@ class Player extends Phaser.GameObjects.GameObject {
         return sprite;
     }
     
+    // Updates data for the object and the associated bullets.
     update() {
         this.sprite.setVisible(this.alive);
         this.sprite.setPosition(this.x, this.y);

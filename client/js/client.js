@@ -16,10 +16,6 @@ Client.inputFire = function(value){
     Client.socket.emit('inputfire', value);
 }
 
-Client.update = function(){
-    Client.socket.emit('update');
-}
-
 Client.socket.on('newplayer',function(data){
     if (IsInGame){
         Game.addNewPlayer(data.id, data.displayName, data.polygon, data.colour, data.bulletSet);

@@ -1,7 +1,6 @@
 class UserInterface {
     constructor() {
-        var camera = game.cameras.main;
-        
+        // Creates the scoreboard and health icons.
         this.ScoreBoard = new ScoreBoard();
         this.Health = new Health();
     }
